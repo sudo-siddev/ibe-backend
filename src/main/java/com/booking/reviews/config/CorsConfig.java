@@ -17,7 +17,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Allow multiple frontend origins (S3 and CloudFront)
-        // Can be configured via CORS_ALLOWED_ORIGINS env var (comma-separated)
+        // Configure via CORS_ALLOWED_ORIGINS env var (comma-separated)
+        // Example: CORS_ALLOWED_ORIGINS=http://ibe-review-frontend.s3-website-us-east-1.amazonaws.com,https://ibe-review-frontend.s3-website-us-east-1.amazonaws.com,https://d1234567890.cloudfront.net
         String allowedOriginsEnv = System.getenv("CORS_ALLOWED_ORIGINS");
         List<String> allowedOrigins;
         
@@ -28,16 +29,18 @@ public class CorsConfig {
                     .filter(origin -> !origin.isEmpty())
                     .toList();
         } else {
-            // Default to both S3 website and CloudFront origins
+            // Default to S3 website origins (CloudFront must be added via env var)
             allowedOrigins = List.of(
                 "http://ibe-review-frontend.s3-website-us-east-1.amazonaws.com",
                 "https://ibe-review-frontend.s3-website-us-east-1.amazonaws.com"
             );
         }
         
+        // When using credentials, exact origin matching is required (no wildcards)
         configuration.setAllowedOrigins(allowedOrigins);
         
-        // Allow credentials (required for Basic Auth)
+        // Allow credentials (required for Basic Auth with CORS)
+        // Note: When credentials are allowed, exact origin matching is enforced
         configuration.setAllowCredentials(true);
         
         // Allowed HTTP methods
